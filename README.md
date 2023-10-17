@@ -43,6 +43,15 @@ such options):
                                  (default 20)
      -r,--real-player            Try to pose as a real CDJ (device #1-4)
 
+### Building on this Framework
+
+There are some comments towards the end of the `Main` class pointing at how
+this could grow to contain additional features that Open Beat Control offered,
+but using the interfaces or protocols that you need, with links to the Clojure
+implementations in OBC. Hopefully those will be easier to understand now that
+you can compare this Java implementations of the rest of OBC with its Clojure
+source.
+
 ### Logging Configuration
 
 Deep Symmetry’s Java libraries use [slf4j](http://www.slf4j.org/manual.html) to allow
@@ -50,7 +59,8 @@ you to integrate it with whatever Java logging framework your project
 is using. This example configures it by including slf4j-jdk14 binding on
 the class path to simply redirect logging to the Java 1.4 logging facility.
 If you want to do something fancier, feel free to switch to a different
-binding and add whatever configuration you’d like.
+binding (this is done in the [Maven project descriptor](pom.xml)),
+and add whatever configuration you’d like.
 
 ## Getting Help
 
@@ -63,7 +73,7 @@ organized. Thanks to them, you can [chat](https://deep-symmetry.zulipchat.com/#n
 with our community</a>, ask questions, get inspiration, and share your
 own ideas. You can also open an
 [issue](https://github.com/Deep-Symmetry/beat-carabiner/issues) on the
-project.
+project if you have found something that seems to need fixing.
 
 ## Research
 

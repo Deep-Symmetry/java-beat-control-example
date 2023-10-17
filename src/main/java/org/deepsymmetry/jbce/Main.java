@@ -2,6 +2,8 @@ package org.deepsymmetry.jbce;
 
 import org.apache.commons.cli.*;
 import org.deepsymmetry.bcj.Carabiner;
+import org.deepsymmetry.bcj.State;
+import org.deepsymmetry.bcj.SyncMode;
 import org.deepsymmetry.beatlink.DeviceAnnouncement;
 import org.deepsymmetry.beatlink.DeviceAnnouncementListener;
 import org.deepsymmetry.beatlink.DeviceFinder;
@@ -14,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 /**
@@ -39,12 +42,62 @@ public class Main {
     }
 
     /**
+     * Once we have both a Carabiner connection to Ableton Link and the Virtual CDJ is online with a Pro DJ Link
+     * network, it is time to set the sync mode the user requested via command-line options, if possible.
+     *
+     * @param abletonMaster indicates whether the Ableton Link session is supposed to be the tempo master
+     */
+    private static void establishBridgeMode(boolean abletonMaster) {
+        if (abletonMaster && VirtualCdj.getInstance().isSendingStatus()) {  // Have Pro DJ Link follow Ableton Link
+            try {
+                VirtualCdj.getInstance().becomeTempoMaster();
+                final Double currentLinkTempo = Carabiner.getInstance().getState().linkTempo;
+                if (currentLinkTempo != null) {
+                    VirtualCdj.getInstance().setTempo(currentLinkTempo);
+                }
+                Carabiner.getInstance().setSyncMode(SyncMode.FULL);
+            } catch (IOException e) {
+                logger.error("Problem telling Virtual CDJ to become tempo master to bridge timelines:", e);
+            }
+        } else {  // Have Ableton Link follow Pro DJ Link
+            VirtualCdj.getInstance().setSynced(true);
+            try {
+                Carabiner.getInstance().setSyncMode(SyncMode.PASSIVE);
+            } catch (IOException e) {
+                logger.error("Problem telling Carabiner to become tempo master to bridge timelines:", e);
+            }
+        }
+    }
+
+    /**
      * Called when we are supposed to bridge to an Ableton Link session, and so need a Carabiner daemon connection.
      *
      * @param abletonMaster indicates whether the Ableton Link session is supposed to be the tempo master
      */
     private static void connectCarabiner(boolean abletonMaster) {
-        // TODO: Implement!
+        boolean connected = false;
+        while (!connected) {
+            State carabinerState = Carabiner.getInstance().getState();
+            logger.info("Trying to connect to Carabiner daemon on port {} with latency {}", carabinerState.port,
+                    carabinerState.latency);
+            try {
+                Carabiner.getInstance().connect();
+                connected = true;
+            } catch (Exception e) {
+                logger.error("Problem trying to connect to Carabiner. Waiting ten seconds to try again.", e);
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e2) {
+                    logger.warn("Unexplained interruption while waiting to reattempt Carabiner connection:",e2);
+                }
+            }
+        }
+
+        // Now that we are connected to Ableton Link, we can set up timeline bridging if we are supposed to,
+        // and if we are also online with a Pro DJ Link network.
+        if (VirtualCdj.getInstance().isRunning()) {
+            establishBridgeMode(abletonMaster);
+        }
     }
 
     /**
@@ -175,7 +228,7 @@ public class Main {
 
             // See if the user wants to use a specific or real device number.
             if (chosenDevice > 0) {
-                logger.info("Virtual CDJ will attempt to use device #" + chosenDevice);
+                logger.info("Virtual CDJ will attempt to use device #{}", chosenDevice);
             } else if (cmd.hasOption("real-player")) {
                 VirtualCdj.getInstance().setUseStandardPlayerNumber(true);
                 logger.info("Virtual CDJ will attempt to pose as a standard player, device #1 through #4");
@@ -187,7 +240,7 @@ public class Main {
             DeviceFinder.getInstance().addDeviceAnnouncementListener(new DeviceAnnouncementListener() {
                 @Override
                 public void deviceFound(DeviceAnnouncement announcement) {
-                    logger.info("Pro DJ Link Device Found: " + announcement);
+                    logger.info("Pro DJ Link Device Found: {}", announcement);
                     new Thread(() -> {  // We have seen a device, so we can start up the VirtualCDJ if it's not running.
                         try {
                             if  (!VirtualCdj.getInstance().isRunning()) {
@@ -198,7 +251,7 @@ public class Main {
                                         VirtualCdj.getInstance().setSendingStatus(true);
                                         MetadataFinder.getInstance().setPassive(false);
                                     }
-                                    // Establish bridge mode if we should.
+                                    establishBridgeMode(cmd.hasOption("ableton-master"));
                                 } else {
                                     logger.warn("Virtual CDJ failed to start.");
                                 }
@@ -211,7 +264,7 @@ public class Main {
 
                 @Override
                 public void deviceLost(DeviceAnnouncement announcement) {
-                    logger.info("Pro DJ Link Device Lost: " + announcement);
+                    logger.info("Pro DJ Link Device Lost: {}", announcement);
                     if (DeviceFinder.getInstance().getCurrentDevices().isEmpty()) {
                         logger.info("Shutting down Virtual CDJ");  // We lost the last device, shut down for now.
                         VirtualCdj.getInstance().stop();
@@ -241,6 +294,14 @@ public class Main {
             printUsage(options);
             System.exit(1);
         }
+
+        // This is where you could add code to register listeners to respond to other Pro DJ Link events, like
+        // the Clojure equivalents in Open Beat Control.
+        // See https://github.com/Deep-Symmetry/open-beat-control/blob/9a043131028df63f05194632989e2d2f1fd46045/src/open_beat_control/core.clj#L240-L337
+        //
+        // You could also add a class that manages your bidirectional universe along the lines of the OSC Server
+        // namespace in Open Beat Control.
+        // See https://github.com/Deep-Symmetry/open-beat-control/blob/main/src/open_beat_control/osc_server.clj
 
         // Keep the program running until killed.
         //noinspection InfiniteLoopStatement
