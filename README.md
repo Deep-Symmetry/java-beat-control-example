@@ -20,12 +20,10 @@ This project is set up to use Maven. To compile it you can execute:
 
     mvn package
 
-This will produce an “überjar” containing the project code along with all required dependencies called something like
-`target/java-beat-control-example-0.1.0-jar-with-dependencies.jar`. To play with it,
-you might want to rename it to something more concise like `jbce.jar`. Then you can
-run it like this:
+This will produce an “überjar” containing the project code along with all required dependencies,
+in the file `target/jcbe-jar-with-dependencies.jar`. You can run it like this:
 
-    java -jar jbce.jar
+    java -jar target/jbce-jar-with-dependencies.jar
 
 You can also pass command-line options after the jar file name, just like Open
 Beat Control (in fact, a large part of the example code involves how to handle
@@ -33,14 +31,17 @@ such options):
 
 ### Options
 
-    -r, --real-player          Try to pose as a real CDJ (device #1-4)
-    -d, --device-number NUM    Use fixed device # (overrides -r)
-    -B, --bridge               Use Carabiner to bridge to Ableton Link
-    -a, --ableton-master       When bridging, Ableton Link tempo wins
-    -b, --beat-align           When bridging, sync to beats only, not bars
-    -c, --carabiner-port PORT  When bridging, port # of Carabiner daemon (default 17000)
-    -l, --latency MS           How many milliseconds are we behind the CDJs (default 20)
-    -h, --help                 Display help information and exit
+    usage: java -jar jcbe-jar-with-dependencies.jar
+     -a,--ableton-master         When bridging, Ableton Link tempo wins
+     -B,--bridge                 Use Carabiner to bridge to Ableton Link
+     -b,--beat-align             When bridging, sync to beats only, not bars
+     -c,--carabiner-port <arg>   When bridging, port # of Carabiner daemon
+                                 (default 17000)
+     -d,--device-number <arg>    Use fixed device # (overrides -r)
+     -h,--help                   Display help information and exit
+     -l,--latency <arg>          How many milliseconds are we behind the CDJs
+                                 (default 20)
+     -r,--real-player            Try to pose as a real CDJ (device #1-4)
 
 ### Logging Configuration
 

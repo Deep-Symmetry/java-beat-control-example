@@ -88,6 +88,9 @@
     </dependencies>
 
     <build>
+        <finalName>
+            jcbe
+        </finalName>
         <pluginManagement>
             <plugins>
                 <plugin>
