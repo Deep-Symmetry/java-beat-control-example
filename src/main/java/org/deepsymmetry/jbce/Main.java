@@ -223,7 +223,7 @@ public class Main {
 
             final int chosenDevice = parseNumberOption(cmd, options.getOption("device-number"), 0, 1, 127);
             final int carabinerPort = parseNumberOption(cmd, options.getOption("carabiner-port"), 17000, 1, 65535);
-            final int latency = parseNumberOption(cmd, options.getOption("latency"), 20, 0, 500);
+            final int latency = parseNumberOption(cmd, options.getOption("latency"), 20, -1000, 1000);
             validateOptionCombinations(cmd, chosenDevice);
 
             // See if the user wants to use a specific or real device number.
