@@ -80,9 +80,22 @@ project if you have found something that seems to need fixing.
 This project is being developed with the help of
 [dysentery](https://github.com/Deep-Symmetry/dysentery). Check that
 out for details of the packets and protocol, and for ways you can help
-figure out more. You can also view [Snapshot API
-Documentation](https://deepsymmetry.org/beat-carabiner-java/snapshot/apidocs/) to
-see what is available in the latest preview release.
+figure out more. It makes heavy use of
+[beat-carabiner-java](https://github.com/Deep-Symmetry/beat-carabiner-java),
+which is in turn built on [beat-link](https://github.com/Deep-Symmetry/beat-link)
+and [Carabiner](https://github.com/Deep-Symmetry/carabiner).
+
+## Downstream Projects
+
+I will gather links to projects I hear about that are building on this example
+here. Please
+[let me know](https://deep-symmetry.zulipchat.com/#narrow/stream/275322-beat-link-trigger)
+if you are experimenting with this so I can include you!
+
+* [java-bc](https://github.com/kokospalme/java-BC) uses a Pi single-board computer 
+  with an OLED display to provide a compact system for managing synchronization
+  between Pro DJ Link and Ableton Link networks.
+
 
 ### Funding
 
