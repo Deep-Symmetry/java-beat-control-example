@@ -251,7 +251,9 @@ public class Main {
                                         VirtualCdj.getInstance().setSendingStatus(true);
                                         MetadataFinder.getInstance().setPassive(false);
                                     }
-                                    establishBridgeMode(cmd.hasOption("ableton-master"));
+                                    if (cmd.hasOption("bridge")) {
+                                        establishBridgeMode(cmd.hasOption("ableton-master"));
+                                    }
                                 } else {
                                     logger.warn("Virtual CDJ failed to start.");
                                 }
